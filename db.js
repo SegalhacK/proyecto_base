@@ -1,46 +1,77 @@
 const Sequelize = require('sequelize');
-const secret = require('./secret') // importo el modulo del archivo SECRET.JS
+const nkey = require('./secret')
 
-// con esto creamos la conexión a la Base de Datos
-const sql = new Sequelize('nombre DB', 'root', secret.password, {
+// Creamos la conexión a la Base de Datos
+const sql = new Sequelize('db_node_base_login', 'root', nkey.password, {
     host: 'localhost',
     dialect: 'mysql'
 });
 
-// Construcción de modelos
-// const Users = sql.define('Users', {
-//     id: {
-//         type: Sequelize.INTEGER,
-//         primaryKey: true,
-//         autoIncrement: true
-//     },
-//     name: {
-//         type: Sequelize.STRING,
-//         allowNull: false,
-//     },
-//     last_name: {
-//         type: Sequelize.STRING,
-//         allowNull: false,
-//     },
-//     email: {
-//         type: Sequelize.STRING,
-//         unique: true,
-//         allowNull: false,
-//         comment: 'Email debe ser único para ingresar al sitio'
-//     },
-//     password: {
-//         type: Sequelize.STRING,
-//         allowNull: false,
-//     }
-// }, { timestamps: true }); // agregamos CREATED AT y UPDATED AAT
+// Definimos la tabla User
+const User = sql.define('User', {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notNull: {
+                msg: 'Debe indicar un nombre'
+            },
+            len: {
+                args: [2],
+                msg: 'El nombre debe ser de largo al menos 2'
+            }
+        }
+    },
+    rol: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue:"NORMAL"
+    },
+    email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            notNull: {
+                msg: 'Debe indicar un email'
+            },
+            len: {
+                args: [3],
+                msg: 'El email debe ser de largo al menos 3'
+            },
+            isEmail: {
+                msg: 'Debe ser un email válido'
+            }
+        }
+    },
+    password: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notNull: {
+                msg: 'Debe indicar una contraseña'
+            },
+            len: {
+                args: [3],
+                msg: 'La contraseña debe ser de largo al menos 3'
+            },
+        }
+    }
+});
 
-// DB debe SINCRONIZARSE 
+//  después sincronizamos nuestro código con la base de datos
 sql.sync()
     .then(() => {
-        console.log('Tablas creadas. Conectado a la DB');
-    });
+        console.log('Tablas creadas (SI NO EXISTEN) ...');
+});
 
 
-// module.exports = {
-//     nombreDB,
-// };
+// finalmente acá listamos todos los modelos que queremos exportar
+module.exports = {
+    User
+};
